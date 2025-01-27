@@ -1,158 +1,142 @@
-<!--
-SPDX-FileCopyrightText: lqvp
-SPDX-License-Identifier: AGPL-3.0-only
--->
+/*
+ * SPDX-FileCopyrightText: lqvp
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 <template>
-<MkContainer :showHeader="widgetProps.showHeader" class="mkw-listenBrainz">
-	<template #icon><i class="ti ti-music"></i></template>
-	<template #header>{{ i18n.ts._widgets.listenBrainz }}</template>
-	<template #func="{ buttonStyleClass }">
-		<button class="_button" :class="buttonStyleClass" @click="fetchPlayingNow()"><i class="ti ti-refresh"></i></button>
-		<button class="_button" :class="buttonStyleClass" @click="configure()"><i class="ti ti-settings"></i></button>
+<MkContainer :foldable="true">
+	<template #header>
+		<i
+			class="ti ti-headphones"
+			style="margin-right: 0.5em"
+		></i>Music
 	</template>
 
-	<div :class="$style.root">
-		<MkLoading v-if="fetching"/>
-		<div v-else-if="!playingNow" style="text-align: center;">
-			<img :src="infoImageUrl" :class="$style.ghostImage"/>
-			<div>{{ i18n.ts.nothing }}</div>
-		</div>
-		<div v-else class="_gaps_s" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-			<div>{{ formattedNote }}</div>
-			<MkButton primary @click="postNote">{{ i18n.ts.note }}</MkButton>
+	<div style="padding: 8px">
+		<div class="flex">
+			<a :href="listenbrainz.musicbrainzurl">
+				<img class="image" :src="listenbrainz.img" :alt="listenbrainz.title"/>
+				<div class="flex flex-col items-start">
+					<p class="text-sm font-bold">Now Playing: {{ listenbrainz.title }}</p>
+					<p class="text-xs font-medium">{{ listenbrainz.artist }}</p>
+				</div>
+			</a>
+			<a :href="listenbrainz.listenbrainzurl">
+				<div class="playicon">
+					<i class="ti ti-player-play-filled"></i>
+				</div>
+			</a>
 		</div>
 	</div>
 </MkContainer>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { useWidgetPropsManager, WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
-import { GetFormResultType } from '@/scripts/form.js';
+import {} from 'vue';
+import * as misskey from 'misskey-js';
 import MkContainer from '@/components/MkContainer.vue';
-import MkButton from '@/components/MkButton.vue';
-import MkLoading from '@/components/global/MkLoading.vue';
-import { i18n } from '@/i18n.js';
-import { infoImageUrl } from '@/instance.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
-
-const name = i18n.ts._widgets.listenBrainz;
-
-const widgetPropsDef = {
-	showHeader: {
-		type: 'boolean' as const,
-		default: true,
-	},
-	userId: {
-		type: 'string' as const,
-		default: null,
-	},
-	noteFormat: {
-		type: 'string' as const,
-		multiline: true,
-		default: '{artist_name} - {track_name} ({media_player}/{music_service_name}/{client}) {url} #nowplaying',
-	},
-	visibility: {
-		type: 'enum' as const,
-		default: 'home' as const,
-		enum: [
-			{ label: 'Public', value: 'public' },
-			{ label: 'Home', value: 'home' },
-			{ label: 'Followers', value: 'followers' },
-		],
-	},
-	refreshIntervalSec: {
-		type: 'number' as const,
-		default: 60,
-	},
-};
-
-		type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
-
-const props = defineProps<WidgetComponentProps<WidgetProps>>();
-const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
-
-const { widgetProps, configure, save } = useWidgetPropsManager(name, widgetPropsDef, props, emit);
-
-const playingNow = ref(false);
-const trackMetadata = ref<any>(null);
-const fetching = ref(true);
-let intervalId: number | null = null;
-
-const formattedNote = computed(() => {
-	if (!trackMetadata.value) return '';
-	return widgetProps.noteFormat
-		.replace('{artist_name}', trackMetadata.value.artist_name || '')
-		.replace('{track_name}', trackMetadata.value.track_name || '')
-		.replace('{media_player}', trackMetadata.value.additional_info?.media_player || '')
-		.replace('{music_service_name}', trackMetadata.value.additional_info?.music_service_name || '')
-		.replace('{url}', trackMetadata.value.additional_info?.origin_url || '')
-		.replace('{client}', trackMetadata.value.additional_info?.submission_client || '');
-});
-
-const fetchPlayingNow = async () => {
-	fetching.value = true;
-	if (!widgetProps.userId) return;
-
-	const url = `https://api.listenbrainz.org/1/user/${widgetProps.userId}/playing-now`;
-	const response = await fetch(url);
-	const data = await response.json();
-
-	if (data.payload.count > 0) {
-		playingNow.value = true;
-		trackMetadata.value = data.payload.listens[0].track_metadata;
-	} else {
-		playingNow.value = false;
-		trackMetadata.value = null;
-	}
-
-	fetching.value = false;
-};
-
-const postNote = async () => {
-	if (!trackMetadata.value) return;
-
-	const note = formattedNote.value;
-	misskeyApi('notes/create', {
-		text: note,
-		visibility: widgetProps.visibility,
+const props = withDefaults(
+	defineProps<{
+		user: misskey.entities.User;
+	}>(),
+	{},
+);
+const listenbrainz = { title: '', artist: '', lastlisten: '', img: '', musicbrainzurl: '', listenbrainzurl: '' };
+if (props.user.listenbrainz) {
+	const getLMData = async (title: string, artist: string) => {
+		const response = await fetch(`https://api.listenbrainz.org/1/metadata/lookup/?artist_name=${artist}&recording_name=${title}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+		const data = await response.json();
+		if (!data.recording_name) {
+			return null;
+		}
+		const titler: string = data.recording_name;
+		const artistr: string = data.artist_credit_name;
+		const img: string = data.release_mbid ? `https://coverartarchive.org/release/${data.release_mbid}/front-250` : 'https://coverartarchive.org/img/big_logo.svg';
+		const musicbrainzurl: string = data.recording_mbid ? `https://musicbrainz.org/recording/${data.recording_mbid}` : '#';
+		const listenbrainzurl: string = data.recording_mbid ? `https://listenbrainz.org/player?recording_mbids=${data.recording_mbid}` : '#';
+		return [titler, artistr, img, musicbrainzurl, listenbrainzurl];
+	};
+	const response = await fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
+		method: 'GET',
+		headers: {
+        	'Content-Type': 'application/json',
+		},
 	});
-};
-
-watch(() => widgetProps.userId, fetchPlayingNow, { immediate: true });
-
-watch(() => widgetProps.refreshIntervalSec, (newInterval) => {
-	if (intervalId) clearInterval(intervalId);
-	if (newInterval > 0) {
-		intervalId = setInterval(fetchPlayingNow, newInterval * 1000);
+	const data = await response.json();
+	if (data.payload.listens && data.payload.listens.length !== 0) {
+		const title: string = data.payload.listens[0].track_metadata.track_name;
+		const artist: string = data.payload.listens[0].track_metadata.artist_name;
+		const lastlisten: string = data.payload.listens[0].playing_now;
+		const img = 'https://coverartarchive.org/img/big_logo.svg';
+		await getLMData(title, artist).then((data) => {
+			if (!data) {
+				listenbrainz.title = title;
+		  listenbrainz.img = img;
+		  listenbrainz.artist = artist;
+		  listenbrainz.lastlisten = lastlisten;
+		  return;
+			} else {
+				listenbrainz.title = data[0];
+		  listenbrainz.img = data[2];
+		  listenbrainz.artist = data[1];
+		  listenbrainz.lastlisten = lastlisten;
+		  listenbrainz.musicbrainzurl = data[3];
+		  listenbrainz.listenbrainzurl = data[4];
+				return;
+			}
+		});
 	}
-}, { immediate: true });
-
-onMounted(() => {
-	if (widgetProps.refreshIntervalSec > 0) {
-		intervalId = setInterval(fetchPlayingNow, widgetProps.refreshIntervalSec * 1000);
-	}
-});
-
-onUnmounted(() => {
-	if (intervalId) clearInterval(intervalId);
-});
-
-defineExpose<WidgetComponentExpose>({
-	name,
-	configure,
-	id: props.widget ? props.widget.id : null,
-});
+}
 </script>
 
-	<style lang="scss" module>
-	.root {
-			padding: 16px;
-	}
-
-	.ghostImage {
-			max-width: 100%;
-			max-height: 100px;
-	}
-	</style>
+<style lang="scss" scoped>
+.flex {
+	display: flex;
+	align-items: center;
+}
+.flex a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.image {
+	height: 4.8rem;
+	margin-right: 0.7rem;
+}
+.items-start {
+	align-items: flex-start;
+}
+.flex-col {
+	display: flex;
+	flex-direction: column;
+}
+.text-sm {
+	font-size: 0.875rem;
+	margin: 0;
+	margin-bottom: 0.3rem;
+}
+.font-bold {
+	font-weight: 700;
+}
+.text-xs {
+	font-size: 0.75rem;
+	margin: 0;
+}
+.font-medium {
+	font-weight: 500;
+}
+.playicon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 3rem;
+	height: 3rem;
+	font-size: 1.7rem;
+	padding-left: 3rem;
+}
+</style>
