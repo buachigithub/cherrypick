@@ -2661,6 +2661,7 @@ _widgets:
   birthdayFollowings: "今日誕生日のユーザー"
   search: "検索"
   dice: "サイコロ"
+  listenBrainz: "ListenBrainz"
 
 _cw:
   hide: "隠す"
@@ -2720,6 +2721,7 @@ _profile:
   name: "名前"
   username: "ユーザー名"
   description: "自己紹介"
+  listenbrainz: "ListenBrainz"
   youCanIncludeHashtags: "ハッシュタグを含めることができます。"
   metadata: "追加情報"
   metadataEdit: "追加情報を編集"
