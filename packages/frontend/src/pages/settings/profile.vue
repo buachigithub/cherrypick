@@ -37,6 +37,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template #prefix><i class="ti ti-cake"></i></template>
 	</MkInput>
 
+	<MkInput v-model="profile.listenbrainz" manualSave>
+		<template #label>{{ i18n.ts._profile.listenbrainz }}<span class="_beta">{{ i18n.ts._cherrypick.function }}</span></template>
+		<template #prefix><i class="ti ti-headphones"></i></template>
+	</MkInput>
+
 	<MkSelect v-model="profile.lang">
 		<template #label>{{ i18n.ts.language }}</template>
 		<option v-for="x in Object.keys(langmap)" :key="x" :value="x">{{ langmap[x].nativeName }}</option>
@@ -153,6 +158,7 @@ const profile = reactive({
 	followedMessage: $i.followedMessage,
 	location: $i.location,
 	birthday: $i.birthday,
+	listenbrainz: $i?.listenbrainz,
 	lang: assertVaildLang($i.lang) ? $i.lang : null,
 	isBot: $i.isBot ?? false,
 	isCat: $i.isCat ?? false,
@@ -203,6 +209,7 @@ function save() {
 		location: profile.location || null,
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		birthday: profile.birthday || null,
+		listenbrainz: profile.listenbrainz || null,
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		lang: profile.lang || null,
 		isBot: !!profile.isBot,
