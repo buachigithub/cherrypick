@@ -8,6 +8,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkSwitch v-model="isLocked" @update:modelValue="save()">{{ i18n.ts.makeFollowManuallyApprove }}<template #caption>{{ i18n.ts.lockedAccountInfo }}</template></MkSwitch>
 	<MkSwitch v-if="isLocked" v-model="autoAcceptFollowed" @update:modelValue="save()">{{ i18n.ts.autoAcceptFollowed }}</MkSwitch>
 
+	<MkSwitch v-model="autoFollowBack" @update:modelValue="save()">
+		{{ i18n.ts.autoFollowBack }}<span class="_beta">{{ i18n.ts._cherrypick.function }}</span>
+		<template #caption>{{ i18n.ts.autoFollowBackDescription }}</template>
+	</MkSwitch>
+
 	<MkSwitch v-model="publicReactions" @update:modelValue="save()">
 		{{ i18n.ts.makeReactionsPublic }}
 		<template #caption>{{ i18n.ts.makeReactionsPublicDescription }}</template>
@@ -179,6 +184,7 @@ const $i = signinRequired();
 
 const isLocked = ref($i.isLocked);
 const autoAcceptFollowed = ref($i.autoAcceptFollowed);
+const autoFollowBack = ref($i.autoFollowBack);
 const noCrawle = ref($i.noCrawle);
 const preventAiLearning = ref($i.preventAiLearning);
 const isExplorable = ref($i.isExplorable);
@@ -236,6 +242,7 @@ function save() {
 	misskeyApi('i/update', {
 		isLocked: !!isLocked.value,
 		autoAcceptFollowed: !!autoAcceptFollowed.value,
+		autoFollowBack: !!autoFollowBack.value,
 		noCrawle: !!noCrawle.value,
 		preventAiLearning: !!preventAiLearning.value,
 		isExplorable: !!isExplorable.value,

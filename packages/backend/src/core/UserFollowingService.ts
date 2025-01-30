@@ -348,6 +348,25 @@ export class UserFollowingService implements OnModuleInit {
 			this.notificationService.createNotification(followee.id, 'follow', {
 			}, follower.id);
 		}
+
+		    // フォローバックの処理を追加
+		if (this.userEntityService.isLocalUser(followee)) {
+			const followeeProfile = await this.userProfilesRepository.findOneBy({ userId: followee.id });
+			if (followeeProfile?.autoFollowBack) {
+				// すでにフォローしているかチェック
+				const alreadyFollowing = await this.followingsRepository.exists({
+					where: {
+						followerId: followee.id,
+						followeeId: follower.id,
+					},
+				});
+
+				if (!alreadyFollowing) {
+					// フォローバックを実行
+					await this.follow(followee, follower, { silent: true });
+				}
+			}
+		}
 	}
 
 	@bindThis

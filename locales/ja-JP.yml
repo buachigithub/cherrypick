@@ -3402,3 +3402,6 @@ _accountTruncate:
   requestAccountTruncate: "アカウント整理をリクエスト"
   started: "整理処理が開始されました。"
   inProgress: "整理が進行中"
+
+autoFollowBack: "自動フォローバック"
+autoFollowBackDescription: "フォローされた際に自動でフォローバックします。"
