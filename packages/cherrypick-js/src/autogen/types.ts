@@ -5352,6 +5352,7 @@ export type components = {
       canImportUserLists: boolean;
       canEditNote: boolean;
       scheduleNoteMax: number;
+			canAutoFollowBack: boolean;
     };
     ReversiGameLite: {
       /** Format: id */

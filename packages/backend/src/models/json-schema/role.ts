@@ -304,6 +304,10 @@ export const packedRolePoliciesSchema = {
 			type: 'integer',
 			optional: false, nullable: false,
 		},
+		canAutoFollowBack: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 	},
 } as const;
 

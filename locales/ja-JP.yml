@@ -2094,6 +2094,8 @@ _role:
     canImportFollowing: "フォローのインポートを許可"
     canImportMuting: "ミュートのインポートを許可"
     canImportUserLists: "リストのインポートを許可"
+    canAutoFollowBack: "自動フォローバックを許可"
+
   _condition:
     roleAssignedTo: "マニュアルロールにアサイン済み"
     isLocal: "ローカルユーザー"
@@ -3402,3 +3404,6 @@ _accountTruncate:
   requestAccountTruncate: "アカウント整理をリクエスト"
   started: "整理処理が開始されました。"
   inProgress: "整理が進行中"
+
+autoFollowBack: "自動フォローバック"
+autoFollowBackDescription: "フォローされた際に自動でフォローバックします。"
