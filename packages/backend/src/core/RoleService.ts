@@ -67,6 +67,7 @@ export type RolePolicies = {
 	canImportFollowing: boolean;
 	canImportMuting: boolean;
 	canImportUserLists: boolean;
+	canAutoFollowBack: boolean;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -105,6 +106,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	canImportFollowing: true,
 	canImportMuting: true,
 	canImportUserLists: true,
+	canAutoFollowBack: false,
 };
 
 @Injectable()
@@ -416,6 +418,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			canImportFollowing: calc('canImportFollowing', vs => vs.some(v => v === true)),
 			canImportMuting: calc('canImportMuting', vs => vs.some(v => v === true)),
 			canImportUserLists: calc('canImportUserLists', vs => vs.some(v => v === true)),
+			canAutoFollowBack: calc('canAutoFollowBack', vs => vs.some(v => v === true)),
 		};
 	}
 
