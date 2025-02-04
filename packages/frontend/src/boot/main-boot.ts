@@ -8,6 +8,7 @@ import { ui } from '@@/js/config.js';
 import { common } from './common.js';
 import type * as Misskey from 'cherrypick-js';
 import type { Component } from 'vue';
+import * as os from '@/os.js';
 import { i18n } from '@/i18n.js';
 import { alert, confirm, popup, post, welcomeToast } from '@/os.js';
 import { useStream } from '@/stream.js';
@@ -392,11 +393,11 @@ export async function mainBoot() {
 		});
 
 		main.on('readAllMessagingMessages', () => {
-			updateAccount({ hasUnreadMessagingMessage: false });
+			updateAccountPartial({ hasUnreadMessagingMessage: false });
 		});
 
 		main.on('unreadMessagingMessage', () => {
-			updateAccount({ hasUnreadMessagingMessage: true });
+			updateAccountPartial({ hasUnreadMessagingMessage: true });
 			sound.playMisskeySfx('chatBg');
 			vibrate(defaultStore.state.vibrateChatBg ? [50, 40] : []);
 		});
@@ -435,6 +436,10 @@ export async function mainBoot() {
 		},
 		's': () => {
 			mainRouter.push('/search');
+		},
+		// 環境によるかもしれないが?では反応しないため、shift+/にする必要がある
+		'shift+/': () => {
+			os.popup(defineAsyncComponent(() => import('@/components/MkKeyboardShortcut.vue')), {}, {});
 		},
 	} as const satisfies Keymap;
 	document.addEventListener('keydown', makeHotkey(keymap), { passive: false });
