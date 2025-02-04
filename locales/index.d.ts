@@ -8102,6 +8102,10 @@ export interface Locale extends ILocale {
              * リストのインポートを許可
              */
             "canImportUserLists": string;
+            /**
+             * 自動フォローバックを許可
+             */
+            "canAutoFollowBack": string;
         };
         "_condition": {
             /**
@@ -12730,14 +12734,6 @@ export interface Locale extends ILocale {
          */
         "inProgress": string;
     };
-    /**
-     * 自動フォローバック
-     */
-    "autoFollowBack": string;
-    /**
-     * フォローされた際に自動でフォローバックします。
-     */
-    "autoFollowBackDescription": string;
     "_keyboardShortCut": {
         /**
          * キーボードショートカット
@@ -12794,6 +12790,14 @@ export interface Locale extends ILocale {
             "sendPost": string;
         };
     };
+    /**
+     * 自動フォローバック
+     */
+    "autoFollowBack": string;
+    /**
+     * フォローされた際に自動でフォローバックします。
+     */
+    "autoFollowBackDescription": string;
 }
 declare const locales: {
     [lang: string]: Locale;
