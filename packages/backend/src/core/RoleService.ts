@@ -68,6 +68,8 @@ export type RolePolicies = {
 	canImportMuting: boolean;
 	canImportUserLists: boolean;
 	canAutoFollowBack: boolean;
+	noteDraftLimit: number;
+	canSetFederationAvatarShape: boolean;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {

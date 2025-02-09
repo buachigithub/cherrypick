@@ -13,7 +13,6 @@ on:
 env:
   COREPACK_DEFAULT_TO_LATEST: 0
 
-
 jobs:
   report:
 
