@@ -15,8 +15,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkButton primary rounded @click="updateBaseRole">{{ i18n.ts.save }}</MkButton>
 					</template>
 					<div class="_gaps_s">
-						<MkInput v-model="baseRoleQ" type="search">
+						<MkInput ref="baseRoleQEl" v-model="baseRoleQ" type="search">
 							<template #prefix><i class="ti ti-search"></i></template>
+							<template v-if="baseRoleQ != ''" #suffix><button type="button" :class="$style.deleteBtn" tabindex="-1" @click="baseRoleQ = ''; baseRoleQEl?.focus();"><i class="ti ti-x"></i></button></template>
 						</MkInput>
 
 						<MkFolder v-if="matchQuery([i18n.ts._role._options.rateLimitFactor, 'rateLimitFactor'])">
@@ -291,6 +292,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkSwitch>
 						</MkFolder>
 
+						<MkFolder v-if="matchQuery([i18n.ts._role._options.noteDraftLimit, 'noteDraftLimit'])">
+							<template #label>{{ i18n.ts._role._options.noteDraftLimit }}</template>
+							<template #suffix>{{ policies.noteDraftLimit }}</template>
+							<MkInput v-model="policies.noteDraftLimit" type="number" :min="0">
+							</MkInput>
+						</MkFolder>
+
+						<MkFolder v-if="matchQuery([i18n.ts._role._options.canSetFederationAvatarShape, 'canSetFederationAvatarShape'])">
+							<template #label>{{ i18n.ts._role._options.canSetFederationAvatarShape }}</template>
+							<template #suffix>{{ policies.canSetFederationAvatarShape ? i18n.ts.yes : i18n.ts.no }}</template>
+							<MkSwitch v-model="policies.canSetFederationAvatarShape">
+								<template #label>{{ i18n.ts.enable }}</template>
+							</MkSwitch>
+						</MkFolder>
+
 					<MkFolder v-if="matchQuery([i18n.ts._role._options.canAutoFollowBack, 'canAutoFollowBack'])">
 						<template #label>{{ i18n.ts._role._options.canAutoFollowBack }}<span class="_beta">{{ i18n.ts._cherrypick.function }}</span></template>
 						<template #suffix>{{ policies.canAutoFollowBack ? i18n.ts.yes : i18n.ts.no }}</template>
@@ -341,6 +357,7 @@ import { useRouter } from '@/router/supplier.js';
 
 const router = useRouter();
 const baseRoleQ = ref('');
+const baseRoleQEl = ref(null);
 
 const roles = await misskeyApi('admin/roles/list');
 
@@ -402,5 +419,14 @@ definePageMetadata(() => ({
 </script>
 
 <style lang="scss" module>
-
+.deleteBtn {
+	position: relative;
+	z-index: 2;
+	margin: 0 auto;
+	border: none;
+	background: none;
+	color: inherit;
+	font-size: 0.8em;
+	pointer-events: auto;
+}
 </style>
