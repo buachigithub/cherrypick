@@ -53,7 +53,7 @@ import { defaultStore } from '@/store.js';
 import { MisskeyEntity } from '@/types/date-separated-list.js';
 import { i18n } from '@/i18n.js';
 
-const SECOND_FETCH_LIMIT = 30;
+const SECOND_FETCH_LIMIT = 99;
 const TOLERANCE = 16;
 const APPEAR_MINIMUM_INTERVAL = 600;
 
@@ -308,7 +308,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		...(props.pagination.offsetMode ? {
 			offset: items.value.size,
 		} : {
-			sinceId: Array.from(items.value.keys()).at(-1),
+			untilId: Array.from(items.value.keys()).at(-1),
 		}),
 	}).then(res => {
 		if (res.length === 0) {
