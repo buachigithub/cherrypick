@@ -308,7 +308,7 @@ const fetchMoreAhead = async (): Promise<void> => {
 		...(props.pagination.offsetMode ? {
 			offset: items.value.size,
 		} : {
-			sinceId: Array.from(items.value.keys()).at(-1),
+			untilId: Array.from(items.value.keys()).at(-1),
 		}),
 	}).then(res => {
 		if (res.length === 0) {
