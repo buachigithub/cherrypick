@@ -109,6 +109,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<FormSection>
 					<template #label>{{ i18n.ts._aboutMisskey.projectMembers }}</template>
 					<div :class="$style.contributors">
+						<a href="https://github.com/buachigithub" target="_blank" :class="$style.contributor">
+							<img src="https://avatars.githubusercontent.com/u/60306404?v=4" :class="$style.contributorAvatar">
+							<span :class="$style.contributorUsername">@buachigithub
+								<span :class="$style.contributorClient">
+									<span :class="$style.cherry">Techniclip</span>
+								</span>
+							</span>
+						</a>
 						<a href="https://github.com/noridev" target="_blank" :class="$style.contributor">
 							<img src="https://avatars.githubusercontent.com/u/11006910?v=4" :class="$style.contributorAvatar">
 							<span :class="$style.contributorUsername">@noridev
