@@ -1,0 +1,13 @@
+
+<svg width="500" height="200" xmlns="http://www.w3.org/2000/svg">
+  <image href="https://github.com/buachigithub/cherrypick/blob/develop/assets/techniclipnewwide.png?raw=true" width="500" height="200">
+    <animate
+      attributeName="y"
+      values="0;20;0"
+      dur="2s"
+      repeatCount="indefinite"
+      keyTimes="0;0.5;1"
+      keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"
+      calcMode="spline" />
+  </image>
+</svg>
