@@ -67,10 +67,8 @@ const typing = () => {
 };
 
 const draftKey = computed(() => props.user ? 'user:' + props.user.id : 'group:' + props.group?.id);
-const canSend = computed(() => {
-	const replacedText = text.value.replace(/[\s\u200B-\u200D\uFEFF]/g, '');
-	return (replacedText != null && replacedText !== '') || file.value != null;
-});
+
+const canSend = computed(() => text.value.trim() !== '' || file.value != null);
 
 watch([text.value, file.value], saveDraft);
 
