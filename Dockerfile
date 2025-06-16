@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 	&& apt-get update \
 	&& apt-get install -yqq --no-install-recommends \
 	build-essential
-	
+
 RUN corepack enable
 WORKDIR /cherrypick
 
@@ -30,7 +30,7 @@ COPY --link ["packages/misskey-bubble-game/package.json", "./packages/misskey-bu
 
 ARG NODE_ENV=production
 
-RUN node -e "console.log(JSON.parse(require('node:fs').readFileSync('./package.json')).packageManager)" | xargs npm install -g
+# RUN node -e "console.log(JSON.parse(require('node:fs').readFileSync('./package.json')).packageManager)" | xargs npm install -g
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm i --frozen-lockfile --aggregate-output
@@ -49,6 +49,7 @@ RUN apt-get update \
 	&& apt-get install -yqq --no-install-recommends \
 	build-essential
 
+RUN corepack enable
 WORKDIR /cherrypick
 
 COPY --link ["pnpm-lock.yaml", "pnpm-workspace.yaml", "package.json", "./"]
@@ -60,7 +61,7 @@ COPY --link ["packages/misskey-bubble-game/package.json", "./packages/misskey-bu
 
 ARG NODE_ENV=production
 
-RUN node -e "console.log(JSON.parse(require('node:fs').readFileSync('./package.json')).packageManager)" | xargs npm install -g
+# RUN node -e "console.log(JSON.parse(require('node:fs').readFileSync('./package.json')).packageManager)" | xargs npm install -g
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
 	pnpm i --frozen-lockfile --aggregate-output
@@ -82,11 +83,14 @@ RUN apt-get update \
 	&& rm -rf /var/lib/apt/lists
 
 # add package.json to add pnpm
-COPY ./package.json ./package.json
-RUN node -e "console.log(JSON.parse(require('node:fs').readFileSync('./package.json')).packageManager)" | xargs npm install -g
+# COPY ./package.json ./package.json
+# RUN node -e "console.log(JSON.parse(require('node:fs').readFileSync('./package.json')).packageManager)" | xargs npm install -g
+
+RUN corepack enable
 
 USER cherrypick
 WORKDIR /cherrypick
+
 
 COPY --chown=cherrypick:cherrypick --from=target-builder /cherrypick/node_modules ./node_modules
 COPY --chown=cherrypick:cherrypick --from=target-builder /cherrypick/packages/backend/node_modules ./packages/backend/node_modules

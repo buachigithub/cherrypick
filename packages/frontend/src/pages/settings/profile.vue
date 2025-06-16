@@ -52,9 +52,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkInput>
 		</SearchMarker>
 
-		<SearchMarker :keywords="['metadata']"></SearchMarker>
+		<SearchMarker :keywords="['metadata','listenbrainz']">
 			<MkInput v-model="profile.listenbrainz" manualSave>
-				<template #label>{{ i18n.ts._profile.listenbrainz }}<span class="_beta">{{ i18n.ts._cherrypick.function }}</span></template>
+				<template #label><SearchLabel>{{ i18n.ts._profile.listenbrainz }}</SearchLabel><span class="_beta">{{ i18n.ts._cherrypick.function }}</span></template>
 				<template #prefix><i class="ti ti-headphones"></i></template>
 			</MkInput>
 		</SearchMarker>
@@ -156,6 +156,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkFolder>
 		</SearchMarker>
 	</div>
+
 </SearchMarker>
 </template>
 
