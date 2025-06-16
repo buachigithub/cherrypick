@@ -50,6 +50,7 @@ export type RolePolicies = {
 	canUseAutoTranslate: boolean;
 	canHideAds: boolean;
 	driveCapacityMb: number;
+	maxFileSizeMb: number;
 	alwaysMarkNsfw: boolean;
 	canUpdateBioMedia: boolean;
 	pinLimit: number;
@@ -68,6 +69,7 @@ export type RolePolicies = {
 	canImportMuting: boolean;
 	canImportUserLists: boolean;
 	canAutoFollowBack: boolean;
+	chatAvailability: 'available' | 'readonly' | 'unavailable';
 	noteDraftLimit: number;
 	canSetFederationAvatarShape: boolean;
 };
@@ -91,6 +93,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	canUseAutoTranslate: false,
 	canHideAds: false,
 	driveCapacityMb: 100,
+	maxFileSizeMb: 10,
 	alwaysMarkNsfw: false,
 	canUpdateBioMedia: true,
 	pinLimit: 5,
@@ -109,11 +112,13 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	canImportMuting: true,
 	canImportUserLists: true,
 	canAutoFollowBack: false,
+	chatAvailability: 'available',
+	noteDraftLimit: 10,
+	canSetFederationAvatarShape: true,
 };
 
 @Injectable()
 export class RoleService implements OnApplicationShutdown, OnModuleInit {
-	private rootUserIdCache: MemorySingleCache<MiUser['id']>;
 	private rolesCache: MemorySingleCache<MiRole[]>;
 	private roleAssignmentByUserIdCache: MemoryKVCache<MiRoleAssignment[]>;
 	private notificationService: NotificationService;
@@ -151,7 +156,6 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	) {
 		//this.onMessage = this.onMessage.bind(this);
 
-		this.rootUserIdCache = new MemorySingleCache<MiUser['id']>(1000 * 60 * 60 * 24 * 7); // 1week. rootユーザのIDは不変なので長めに
 		this.rolesCache = new MemorySingleCache<MiRole[]>(1000 * 60 * 60); // 1h
 		this.roleAssignmentByUserIdCache = new MemoryKVCache<MiRoleAssignment[]>(1000 * 60 * 5); // 5m
 
@@ -384,6 +388,12 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			return aggregate(policies.map(policy => policy.useDefault ? basePolicies[name] : policy.value));
 		}
 
+		function aggregateChatAvailability(vs: RolePolicies['chatAvailability'][]) {
+			if (vs.some(v => v === 'available')) return 'available';
+			if (vs.some(v => v === 'readonly')) return 'readonly';
+			return 'unavailable';
+		}
+
 		return {
 			gtlAvailable: calc('gtlAvailable', vs => vs.some(v => v === true)),
 			ltlAvailable: calc('ltlAvailable', vs => vs.some(v => v === true)),
@@ -403,6 +413,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			canUseAutoTranslate: calc('canUseAutoTranslate', vs => vs.some(v => v === true)),
 			canHideAds: calc('canHideAds', vs => vs.some(v => v === true)),
 			driveCapacityMb: calc('driveCapacityMb', vs => Math.max(...vs)),
+			maxFileSizeMb: calc('maxFileSizeMb', vs => Math.max(...vs)),
 			alwaysMarkNsfw: calc('alwaysMarkNsfw', vs => vs.some(v => v === true)),
 			canUpdateBioMedia: calc('canUpdateBioMedia', vs => vs.some(v => v === true)),
 			pinLimit: calc('pinLimit', vs => Math.max(...vs)),
@@ -421,19 +432,22 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			canImportMuting: calc('canImportMuting', vs => vs.some(v => v === true)),
 			canImportUserLists: calc('canImportUserLists', vs => vs.some(v => v === true)),
 			canAutoFollowBack: calc('canAutoFollowBack', vs => vs.some(v => v === true)),
+			chatAvailability: calc('chatAvailability', aggregateChatAvailability),
+			noteDraftLimit: calc('noteDraftLimit', vs => Math.max(...vs)),
+			canSetFederationAvatarShape: calc('canSetFederationAvatarShape', vs => vs.some(v => v === true)),
 		};
 	}
 
 	@bindThis
-	public async isModerator(user: { id: MiUser['id']; isRoot: MiUser['isRoot'] } | null): Promise<boolean> {
+	public async isModerator(user: { id: MiUser['id'] } | null): Promise<boolean> {
 		if (user == null) return false;
-		return user.isRoot || (await this.getUserRoles(user.id)).some(r => r.isModerator || r.isAdministrator);
+		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isModerator || r.isAdministrator);
 	}
 
 	@bindThis
-	public async isAdministrator(user: { id: MiUser['id']; isRoot: MiUser['isRoot'] } | null): Promise<boolean> {
+	public async isAdministrator(user: { id: MiUser['id'] } | null): Promise<boolean> {
 		if (user == null) return false;
-		return user.isRoot || (await this.getUserRoles(user.id)).some(r => r.isAdministrator);
+		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isAdministrator);
 	}
 
 	@bindThis
@@ -482,16 +496,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 				.map(a => a.userId),
 		);
 
-		if (includeRoot) {
-			const rootUserId = await this.rootUserIdCache.fetch(async () => {
-				const it = await this.usersRepository.createQueryBuilder('users')
-					.select('id')
-					.where({ isRoot: true })
-					.getRawOne<{ id: string }>();
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				return it!.id;
-			});
-			resultSet.add(rootUserId);
+		if (includeRoot && this.meta.rootUserId) {
+			resultSet.add(this.meta.rootUserId);
 		}
 
 		return [...resultSet].sort((x, y) => x.localeCompare(y));
@@ -656,6 +662,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			isModerator: values.isModerator,
 			isExplorable: values.isExplorable,
 			asBadge: values.asBadge,
+			preserveAssignmentOnMoveAccount: values.preserveAssignmentOnMoveAccount,
 			canEditMembersByModerator: values.canEditMembersByModerator,
 			displayOrder: values.displayOrder,
 			policies: values.policies,
