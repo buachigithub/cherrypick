@@ -29,13 +29,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useWidgetPropsManager, WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
-import { GetFormResultType } from '@/scripts/form.js';
+import type { FormWithDefault, GetFormResultType } from '@/utility/form.js';
 import MkContainer from '@/components/MkContainer.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkLoading from '@/components/global/MkLoading.vue';
 import { i18n } from '@/i18n.js';
-import { infoImageUrl } from '@/instance.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
+import { deepClone } from '@/utility/clone.js';
+import { prefer } from '@/preferences.js';
+import { genId } from '@/utility/id.js';
 
 const name = i18n.ts._widgets.listenBrainz;
 
