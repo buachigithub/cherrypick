@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 	&& apt-get update \
 	&& apt-get install -yqq --no-install-recommends \
 	build-essential
-	
+
 RUN corepack enable
 WORKDIR /cherrypick
 
@@ -52,6 +52,7 @@ RUN apt-get update \
 	&& apt-get install -yqq --no-install-recommends \
 	build-essential
 
+RUN corepack enable
 WORKDIR /cherrypick
 
 COPY --link ["pnpm-lock.yaml", "pnpm-workspace.yaml", "package.json", "./"]
@@ -91,6 +92,7 @@ RUN node -e "console.log(JSON.parse(require('node:fs').readFileSync('./package.j
 
 USER cherrypick
 WORKDIR /cherrypick
+
 
 COPY --chown=cherrypick:cherrypick --from=target-builder /cherrypick/node_modules ./node_modules
 COPY --chown=cherrypick:cherrypick --from=target-builder /cherrypick/packages/backend/node_modules ./packages/backend/node_modules

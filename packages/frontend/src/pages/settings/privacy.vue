@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<SearchMarker :keywords="['following', 'follow']">
 			<MkSwitch v-model="autoFollowBack" @update:modelValue="save()">
-				{{ i18n.ts.autoFollowBack }}<span class="_beta">{{ i18n.ts._cherrypick.function }}</span>
+				<template #label><SearchLabel>{{ i18n.ts.autoFollowBack }}</SearchLabel><span class="_beta">{{ i18n.ts._cherrypick.function }}</span></template>
 				<template #caption>{{ i18n.ts.autoFollowBackDescription }}</template>
 			</MkSwitch>
 		</SearchMarker>
